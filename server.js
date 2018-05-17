@@ -61,6 +61,31 @@ app.post('/posts', (req, res) => {
     });
 });
 
+app.put('/posts/:id', (req, res) => {		//if ID's match but not in db, no error?
+  if (!(req.params.id === req.body.created)) {
+    const message = (
+      `Request path id (${req.params.id}) and request body id ` +
+      `(${req.body.created}) must match`);
+    console.error(message);
+    return res.status(400).json({ message: message });
+  }
+
+  const toUpdate = {};
+  const updateableFields = ['title', 'content', 'author'];
+
+  updateableFields.forEach(field => {
+    if (field in req.body) {
+      toUpdate[field] = req.body[field];
+    }
+  });
+
+  BlogPost
+    .findByIdAndUpdate(req.params.id, { $set: toUpdate })
+    .then(blogpost => res.status(204).end())
+    .catch(err => res.status(500).json({ message: 'Internal server error' }));
+});
+
+
 let server;
 
 function runServer(databaseUrl, port = PORT) {
