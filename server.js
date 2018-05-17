@@ -61,7 +61,7 @@ app.post('/posts', (req, res) => {
     });
 });
 
-app.put('/posts/:id', (req, res) => {		//if ID's match but not in db, no error?
+app.put('/posts/:id', (req, res) => {		
   if (!(req.params.id === req.body.created)) {
     const message = (
       `Request path id (${req.params.id}) and request body id ` +
@@ -81,8 +81,19 @@ app.put('/posts/:id', (req, res) => {		//if ID's match but not in db, no error?
 
   BlogPost
     .findByIdAndUpdate(req.params.id, { $set: toUpdate })
+    .then(blogpost => res.status(200).json(blogpost.serialize()))
+    .catch(err => res.status(500).json({ message: 'Internal server error' }));
+});
+
+app.delete('/posts/:id', (req, res) => {
+  BlogPost
+    .findByIdAndRemove(req.params.id)
     .then(blogpost => res.status(204).end())
     .catch(err => res.status(500).json({ message: 'Internal server error' }));
+});
+
+app.use('*', function (req, res) {
+  res.status(404).json({ message: 'Not Found' });
 });
 
 
